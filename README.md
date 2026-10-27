@@ -1,5 +1,7 @@
 # Simple 2D Animation Studio
 
+> Full upload-to-GitHub and deployment steps: see [DEPLOY_STEPS.md](DEPLOY_STEPS.md).
+
 A desktop-first, beginner-friendly web application for creating complete 2D animations:
 draw → color → rig simple characters → storyboard → keyframe animation → audio → preview → export.
 
@@ -86,6 +88,8 @@ Vite proxies `/api/*` to the backend, so no extra configuration is needed.
 ```bash
 npm test           # runs shared → backend → frontend suites
 # individually:
+
+> Full upload-to-GitHub and deployment steps: see [DEPLOY_STEPS.md](DEPLOY_STEPS.md).
 npm test -w shared     # 16 tests: schema validation, referential integrity, v1→v2→v3 migrations
 npm test -w backend    # 16 tests: LLM adapter errors, credential redaction/encryption, upload
                        #           validation & SVG sanitizing, FFmpeg status, PNG-sequence ZIP
@@ -106,6 +110,8 @@ a documented test-environment limitation, not an app limitation — browsers enc
 ```bash
 npm run build      # shared → backend (tsc) → frontend (tsc --noEmit + vite build)
 # serve: node backend/dist/server.js   + host frontend/dist/ with any static server
+
+> Full upload-to-GitHub and deployment steps: see [DEPLOY_STEPS.md](DEPLOY_STEPS.md).
 ```
 
 ## Using an LLM provider (optional)
