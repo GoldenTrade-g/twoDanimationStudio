@@ -47,7 +47,7 @@ describe('JSON import/export with validation & migration', () => {
     (v1 as { schemaVersion: number }).schemaVersion = 1;
     const s = v1.scenes[0] as unknown as Record<string, unknown>;
     delete s.camera; delete s.transitionIn; delete s.subtitles; delete s.drawingFrames;
-    delete (v1.settings as Record<string, unknown>).safeAreas;
+    delete ((v1.settings as unknown) as Record<string, unknown>).safeAreas;
     for (const l of v1.scenes[0].layers as unknown as Record<string, unknown>[]) delete l.parallaxDepth;
     const migrated = parseProjectJson(JSON.stringify(v1));
     expect(migrated.schemaVersion).toBe(3);

@@ -6,9 +6,9 @@
     "strict": true,
     "skipLibCheck": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": "..",
     "esModuleInterop": true,
     "lib": ["ES2022"]
   },
-  "include": ["src"]
+  "include": ["src", "../shared/src"]
 }

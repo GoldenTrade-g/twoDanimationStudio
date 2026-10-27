@@ -38,19 +38,15 @@ function recordingCtx() {
   const ctx: Record<string, unknown> = {
     save: noop, restore: noop, beginPath: noop, closePath: noop, moveTo: noop, lineTo: noop,
     fill: noop, stroke: noop, fillRect: noop, strokeRect: noop, clearRect: noop, arc: noop,
-    setTransform: noop, scale: noop, rotate: noop, fillText: noop, drawImage: noop, rect: noop, arcTo: noop, roundRect: noop, quadraticCurveTo: noop, bezierCurveTo: noop, clip: noop,
+    setTransform: noop, scale: noop, rotate: noop, fillText: noop, drawImage: noop, rect: noop,
+    ellipse: noop, arcTo: noop, roundRect: noop, quadraticCurveTo: noop, bezierCurveTo: noop, clip: noop,
     translate: (x: number, y: number) => { calls.push(`translate:${Math.round(x)},${Math.round(y)}`); },
     measureText: () => ({ width: 10 }),
     createLinearGradient: () => ({ addColorStop: noop }),
     createRadialGradient: () => ({ addColorStop: noop }),
     getImageData: (_x: number, _y: number, w: number, h: number) => ({ data: new Uint8ClampedArray(w * h * 4), width: w, height: h }),
     putImageData: noop,
-  } as Record<string, unknown>, {
-    get(target, prop: string) {
-      if (prop in target) return target[prop];
-      return (...a: unknown[]) => { void a; }; // generic no-op for any other canvas method
-    },
-  });
+  };
   return { ctx: ctx as unknown as CanvasRenderingContext2D, calls };
 }
 
@@ -152,7 +148,7 @@ describe('vertical slice: draw → color → keyframe → play → save → relo
     for (let f = 0; f < Math.min(totalFrames, 6); f++) {
       renderScene(ctx, project, scene, f / fps);
       try {
-        const url = canvas.toDataURL('image/png');
+        const url = canvas.toDataURL('image/png'); // jsdom throws "not implemented" (virtual console logs it; harmless)
         if (url.startsWith('data:image/png')) frames.push(url);
       } catch { /* jsdom stub */ }
     }

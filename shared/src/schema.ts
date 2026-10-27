@@ -5,8 +5,8 @@
 import type {
   Project, Scene, Layer, DrawableObject, Keyframe, StoryboardCard, Asset,
   StoryboardResult, AnimationPlanResult, RGBA, ExportSettings, LLMProviderConfig,
-} from './types';
-import { CURRENT_SCHEMA_VERSION } from './types';
+} from './types.js';
+import { CURRENT_SCHEMA_VERSION } from './types.js';
 
 export class ValidationError extends Error {
   issues: string[];
@@ -277,7 +277,7 @@ export function validateProject(raw: unknown): ValidationResult<Project> {
     for (const l of s.layers) {
       for (const o of l.objects) {
         if (o.kind === 'image' && !assetIds.has(o.assetId)) c.fail(`scene ${s.id}`, `image object references missing asset ${o.assetId}`);
-        if (o.parentId && !l.objects.some(p => p.id === o.parentId)) {
+        if (o.parentId && !l.objects.some((p: DrawableObject) => p.id === o.parentId)) {
           // dangling parent — repair by detaching (tolerant)
           o.parentId = null;
         }

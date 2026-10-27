@@ -4,7 +4,7 @@
  * v2: added audioClips fade fields, drawingFrames, parallaxDepth
  * v3: added camera keyframes, transitionIn, storyboard approved flag, safe areas
  */
-import { CURRENT_SCHEMA_VERSION } from './types';
+import { CURRENT_SCHEMA_VERSION } from './types.js';
 
 type AnyObj = Record<string, any>;
 

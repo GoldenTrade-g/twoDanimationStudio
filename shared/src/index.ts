@@ -1,3 +1,3 @@
-export * from './types';
-export * from './schema';
-export * from './migrate';
+export * from './types.js';
+export * from './schema.js';
+export * from './migrate.js';
