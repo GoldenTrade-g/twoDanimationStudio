@@ -1,0 +1,21 @@
+{
+  "name": "simple-2d-animation-studio",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered simple 2D animation studio: drawing, storyboard, timeline, playback, and export.",
+  "workspaces": [
+    "shared",
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "concurrently -n backend,frontend -c blue,magenta \"npm run dev -w backend\" \"npm run dev -w frontend\"",
+    "build": "npm run build -w shared && npm run build -w backend && npm run build -w frontend",
+    "test": "npm run test -w shared && npm run test -w backend && npm run test -w frontend",
+    "start": "npm run start -w backend"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "5.6.3"
+  }
+}
