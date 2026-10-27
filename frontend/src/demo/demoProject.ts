@@ -6,6 +6,7 @@
 import type { Project, Scene, DrawableObject, RGBA } from '@studio/shared';
 import { CURRENT_SCHEMA_VERSION } from '@studio/shared';
 import { newScene } from '../state/store';
+import { defaultCharacterSpec, characterAssetFromSpec, instantiateAsset } from '../components/characterBuilder';
 import { uid } from '../util';
 
 const rgba = (r: number, g: number, b: number, a = 1): RGBA => ({ r, g, b, a });
@@ -55,7 +56,7 @@ export function buildDemoProject(): Project {
 
   const heroObjs = instantiateAsset(heroAsset, 120, 200, 1);
   chars.objects.push(...heroObjs);
-  const root = heroObjs.find((o) => o.parentId === null) ?? heroObjs[0];
+  const root = heroObjs.find((o: DrawableObject) => o.parentId === null) ?? heroObjs[0];
   // Keyframes: walk in (x), bounce (y), fade in (opacity)
   s1.animations.push({
     objectId: root.id,

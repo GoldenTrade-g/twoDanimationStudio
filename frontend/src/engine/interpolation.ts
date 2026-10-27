@@ -70,15 +70,16 @@ function colorAt(tracks: Record<string, Keyframe[]>, prop: string, time: number)
   let i = -1;
   for (let j = 0; j < kfs.length; j++) { if (kfs[j].time <= time + 1e-9) i = j; else break; }
   if (i === -1) return String(kfs[0].value);
-  const a = String(kfs[i].value);
-  if (i === kfs.length - 1) return a;
+  const a = kfs[i];
+  const aStr = String(a.value);
+  if (i === kfs.length - 1) return aStr;
   const b = kfs[i + 1];
   const bStr = String(b.value);
-  if (b.interpolation === 'hold') return time >= b.time ? bStr : a;
+  if (b.interpolation === 'hold') return aStr; // step: hold previous value until next keyframe
   const span = b.time - a.time;
   const t = span > 0 ? ease((time - a.time) / span, b.interpolation) : 1;
-  const pa = parseHex(a), pb = parseHex(bStr);
-  if (!pa || !pb) return t >= 0.5 ? bStr : a;
+  const pa = parseHex(aStr), pb = parseHex(bStr);
+  if (!pa || !pb) return t >= 0.5 ? bStr : aStr;
   const mix = (u: number, v: number) => Math.round(u + (v - u) * t);
   return `#${mix(pa[0], pb[0]).toString(16).padStart(2, '0')}${mix(pa[1], pb[1]).toString(16).padStart(2, '0')}${mix(pa[2], pb[2]).toString(16).padStart(2, '0')}`;
 }

@@ -118,7 +118,7 @@ export function AudioPanel(): JSX.Element {
           const asset = st.project.assets.find((a) => a.id === c.assetId);
           return (
             <div key={c.id} className="row wrap" style={{ borderTop: '1px solid var(--border)', paddingTop: 6 }}>
-              <span className="grow">{asset ? `🔊 ${c.label}` : <span className="chip bad">Missing audio asset</span>}</span>
+              <span className="grow">{asset ? `🔊 ${c.name}` : <span className="chip bad">Missing audio asset</span>}</span>
               <label className="muted">start <input type="number" step={0.1} min={0} style={{ width: 62 }} value={c.startTime} aria-label="Clip start time"
                 onChange={(e) => store.patchAudioClip(c.id, { startTime: Number(e.target.value) })} /></label>
               <label className="muted">trim in <input type="number" step={0.1} min={0} style={{ width: 62 }} value={c.trimStart} aria-label="Clip trim start"
