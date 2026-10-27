@@ -115,10 +115,16 @@ describe('HTTP API', () => {
   it('png-zip produces a ZIP file', async () => {
     const app = createApp({ dataDir: tmpDir(), secretHex: KEY_HEX });
     const pngB64 = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 1, 2, 3]).toString('base64');
-    const r = await request(app).post('/api/export/png-zip').send({ frames: [pngB64, pngB64] }).buffer();
+    const r = await request(app).post('/api/export/png-zip').send({ frames: [pngB64, pngB64] }).buffer().parse((res, cb) => {
+      const chunks: Buffer[] = [];
+      res.on('data', (c: Buffer) => chunks.push(c));
+      res.on('end', () => cb(null, Buffer.concat(chunks)));
+    });
     expect(r.status).toBe(200);
     expect(r.headers['content-type']).toContain('application/zip');
-    expect((r.body as Buffer).subarray(0, 2).toString()).toBe('PK');
+    const body = r.body as unknown;
+    const head = Buffer.isBuffer(body) ? body.subarray(0, 2).toString() : Buffer.from(body as Uint8Array).subarray(0, 2).toString();
+    expect(head).toBe('PK');
   });
 });
 
