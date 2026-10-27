@@ -74,7 +74,7 @@ function colorAt(tracks: Record<string, Keyframe[]>, prop: string, time: number)
   if (i === kfs.length - 1) return a;
   const b = kfs[i + 1];
   const bStr = String(b.value);
-  if (b.interpolation === 'hold') return a;
+  if (b.interpolation === 'hold') return time >= b.time ? bStr : a;
   const span = b.time - a.time;
   const t = span > 0 ? ease((time - a.time) / span, b.interpolation) : 1;
   const pa = parseHex(a), pb = parseHex(bStr);

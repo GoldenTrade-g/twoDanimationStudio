@@ -1,6 +1,7 @@
 /** Hit-testing and geometry helpers for editor tools. */
 import type { DrawableObject, Vec2 } from '@studio/shared';
 import { localBounds, type Bounds } from './renderer';
+export type { Bounds };
 
 export function pointInBounds(p: Vec2, b: Bounds, pad = 0): boolean {
   return p.x >= b.x - pad && p.x <= b.x + b.w + pad && p.y >= b.y - pad && p.y <= b.y + b.h + pad;

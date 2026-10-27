@@ -20,8 +20,9 @@ export function AudioPanel(): JSX.Element {
     let cancelled = false;
     const ac = ensureCtx();
     if (!ac) return;
+    const started: { clip: AudioClip; node: AudioBufferSourceNode }[] = [];
+    srcRef.current = new Map(started.map((s) => [s.clip.id, { node: s.node, gain: ac.createGain() }]));
     void (async () => {
-      const started: { clip: AudioClip; node: AudioBufferSourceNode }[] = [];
       for (const clip of scene.audioClips) {
         const asset = st.project.assets.find((a) => a.id === clip.assetId);
         if (!asset?.dataUrl) continue;
@@ -31,12 +32,20 @@ export function AudioPanel(): JSX.Element {
           const src = ac.createBufferSource();
           src.buffer = buf;
           const g = ac.createGain();
-          g.gain.value = clip.gain;
-          src.connect(g).connect(ac.destination);
+          const dur = Math.max(0.01, clip.duration || buf.duration);
+          // Gain envelope: gain * fade-in / fade-out ramps, deterministic from clip config.
           const when = ac.currentTime + Math.max(0, clip.startTime - st.time);
-          const offset = Math.max(0, clip.trimStart + (st.time - clip.startTime));
-          src.start(Math.max(ac.currentTime, when), offset);
+          const startAt = Math.max(ac.currentTime, when);
+          g.gain.setValueAtTime(0, startAt);
+          g.gain.linearRampToValueAtTime(clip.gain, startAt + Math.max(0.001, clip.fadeIn));
+          const fadeOutStart = Math.max(startAt + clip.fadeIn, startAt + dur - Math.max(0.001, clip.fadeOut));
+          g.gain.setValueAtTime(clip.gain, fadeOutStart);
+          g.gain.linearRampToValueAtTime(0, startAt + dur);
+          src.connect(g).connect(ac.destination);
+          const offset = Math.max(0, clip.trimStart + Math.max(0, st.time - clip.startTime));
+          src.start(startAt, offset, dur);
           started.push({ clip, node: src });
+          srcRef.current.set(clip.id, { node: src, gain: g });
         } catch { /* skip undecodable clip */ }
       }
     })();
@@ -81,10 +90,11 @@ export function AudioPanel(): JSX.Element {
         fr.readAsDataURL(file);
       });
       const assetId = uid('asset');
-      store.addAsset({ id: assetId, name: file.name, kind: 'audio', tags: [], createdAt: Date.now(), dataUrl, rasterOnly: true });
+      store.addAsset({ id: assetId, name: file.name, kind: 'audio', tags: [], createdAt: Date.now(), dataUrl, objects: null, characterSpec: null, rig: null, rasterOnly: true });
       store.addAudioClip({
-        id: uid('clip'), assetId, startTime: st.time, trimStart: 0, trimEnd: 0,
-        gain: 1, fadeIn: 0, fadeOut: 0, label: file.name.replace(/\.[^.]+$/, ''),
+        id: uid('clip'), name: file.name.replace(/\.[^.]+$/, ''), kind: 'sfx',
+        assetId, startTime: st.time, trimStart: 0, duration: 0,
+        gain: 1, fadeIn: 0, fadeOut: 0,
       });
       store.status(`Added audio “${file.name}”.`);
     } catch (e) {
@@ -133,7 +143,7 @@ export function AudioPanel(): JSX.Element {
             <input type="text" className="grow" value={s.text} placeholder="Subtitle text" aria-label="Subtitle text"
               onChange={(e) => store.patchSubtitle(s.id, { text: e.target.value })} />
             <input type="text" style={{ width: 90 }} value={s.speaker ?? ''} placeholder="Speaker" aria-label="Speaker"
-              onChange={(e) => store.patchSubtitle(s.id, { speaker: e.target.value || null })} />
+              onChange={(e) => store.patchSubtitle(s.id, { speaker: e.target.value || undefined })} />
             <label className="muted">from <input type="number" step={0.1} min={0} style={{ width: 58 }} value={s.startTime} aria-label="Subtitle start"
               onChange={(e) => store.patchSubtitle(s.id, { startTime: Number(e.target.value) })} /></label>
             <label className="muted">to <input type="number" step={0.1} min={0} style={{ width: 58 }} value={s.endTime} aria-label="Subtitle end"
@@ -141,7 +151,7 @@ export function AudioPanel(): JSX.Element {
             <button className="btn small danger" aria-label="Delete subtitle" onClick={() => store.deleteSubtitle(s.id)}>✕</button>
           </div>
         ))}
-        <button className="btn small" onClick={() => store.addSubtitle({ id: uid('sub'), startTime: st.time, endTime: Math.min(scene.duration, st.time + 2), text: 'New subtitle', speaker: null })}>
+        <button className="btn small" onClick={() => store.addSubtitle({ id: uid('sub'), startTime: st.time, endTime: Math.min(scene.duration, st.time + 2), text: 'New subtitle' })}>
           + Add subtitle at playhead
         </button>
       </section>

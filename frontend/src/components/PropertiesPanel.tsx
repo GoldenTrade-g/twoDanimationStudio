@@ -198,7 +198,7 @@ export function PropertiesPanel(): JSX.Element {
             if (!name) return;
             const ids = st.selectedObjectIds;
             const objs = (scene?.layers.flatMap((l) => l.objects) ?? []).filter((o) => ids.includes(o.id)).map((o) => structuredClone(o));
-            store.addAsset({ id: crypto.randomUUID(), name, kind: 'prop', tags: [], createdAt: Date.now(), dataUrl: null, objects: objs, rasterOnly: false });
+            store.addAsset({ id: crypto.randomUUID(), name, kind: 'prop', tags: [], createdAt: Date.now(), dataUrl: null, objects: objs, characterSpec: null, rig: null, rasterOnly: false });
             store.status(`Saved asset “${name}”.`);
           }}>Save selection as asset</button>
         </div>

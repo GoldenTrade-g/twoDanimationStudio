@@ -11,6 +11,8 @@ import { evaluateAnimation, type EffectiveProps } from './interpolation';
 export interface RenderOptions {
   /** Checkerboard behind transparent background (editor only). */
   checkerboard?: boolean;
+  /** Skip the scene background color entirely (transparent PNG export). */
+  transparentBackground?: boolean;
   /** Onion skin layers rendered underneath with alpha. */
   onionObjects?: { objects: DrawableObject[]; alpha: number }[];
   /** Grid overlay (editor only). */
@@ -202,11 +204,12 @@ function drawObject(ctx: CanvasRenderingContext2D, project: Project, scene: Scen
           ctx.stroke();
         }
         // Freehand strokes render as round-capped polyline of brushSize width
-        if (obj.points.length > 1 && obj.strokeKind !== 'eraser') {
-          ctx.strokeStyle = fillCss ?? rgba(obj.stroke) ;
+        if (obj.points.length > 1) {
+          ctx.strokeStyle = fillCss ?? rgba(obj.stroke) ?? '#000';
           ctx.lineWidth = obj.brushSize;
+          ctx.lineCap = 'round';
           ctx.beginPath();
-          obj.points.forEach((p, i) => (i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y)));
+          obj.points.forEach((p2, i) => (i === 0 ? ctx.moveTo(p2.x, p2.y) : ctx.lineTo(p2.x, p2.y)));
           ctx.stroke();
         } else if (obj.points.length === 1) {
           ctx.fillStyle = fillCss ?? '#000';
@@ -429,7 +432,9 @@ export function renderScene(ctx: CanvasRenderingContext2D, project: Project, sce
   ctx.save();
   ctx.clearRect(0, 0, W, H);
 
-  if (opts.checkerboard) {
+  if (opts.transparentBackground) {
+    // leave canvas transparent (PNG sequence / still with alpha)
+  } else if (opts.checkerboard) {
     const sq = 16;
     for (let y = 0; y < H; y += sq) for (let x = 0; x < W; x += sq) {
       ctx.fillStyle = ((x / sq + y / sq) % 2 === 0) ? '#e8e8e8' : '#ffffff';

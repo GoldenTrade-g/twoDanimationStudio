@@ -43,7 +43,6 @@ function CardsView(): JSX.Element {
     <div className="story-grid">
       {cards.map((c, i) => {
         const linked = c.linkedSceneId ? st.project.scenes.find((s) => s.id === c.linkedSceneId) : null;
-        const missingAssets = c.assetRefs.filter((r) => !st.project.assets.some((a) => a.id === r));
         return (
           <div key={c.id} className="story-card" data-testid={`story-card-${c.sceneNumber}`}>
             <div className="thumb">{linked ? <SceneThumb scene={linked} /> : `#${c.sceneNumber}`}</div>
@@ -61,9 +60,9 @@ function CardsView(): JSX.Element {
               <input type="text" className="grow" style={{ width: '100%' }} value={c.characters.join(', ')} aria-label="Characters"
                 onChange={(e) => patch(c.id, { characters: e.target.value.split(',').map((x) => x.trim()).filter(Boolean) })} /></label>
             {c.dialogue && <div className="muted">💬 {c.dialogue}</div>}
-            {c.cameraInstruction && <div className="muted">🎥 {c.cameraInstruction}</div>}
-            {missingAssets.length > 0 && <div className="chip bad">Missing {missingAssets.length} asset(s)</div>}
+            {c.movement && <div className="muted">🎥 {c.framing}: {c.movement}</div>}
             {!c.approved && <div className="chip">Needs approval</div>}
+            {linked && <ChecklistChip scene={linked} />}
             <div className="row wrap">
               <button className="btn small" onClick={() => patch(c.id, { approved: !c.approved })}>{c.approved ? 'Unapprove' : '✔ Approve'}</button>
               {linked ? (
@@ -88,9 +87,9 @@ function CardsView(): JSX.Element {
         <button className="btn" onClick={() => {
           const n = (st.project.storyboard.at(-1)?.sceneNumber ?? 0) + 1;
           store.patchStoryboard([...st.project.storyboard, {
-            id: uid('card'), sceneNumber: n, location: '', characters: [], action: '', dialogue: null,
-            cameraInstructions: null, mood: null, transition: 'cut', duration: 4, notes: null,
-            title: `Scene ${n}`, description: '', approved: false, linkedSceneId: null, assetRefs: [],
+            id: uid('card'), sceneNumber: n, location: '', characters: [], movement: '', dialogue: '',
+            soundCues: '', transition: 'cut', duration: 4, framing: 'medium',
+            title: `Scene ${n}`, description: '', approved: false, linkedSceneId: null, thumbnailDataUrl: null,
           }]);
         }}>+ Add card</button>
       </div>
@@ -106,6 +105,17 @@ function CardsView(): JSX.Element {
     const numbered = arr.map((c, k) => ({ ...c, sceneNumber: k + 1 }));
     store.patchStoryboard([...st.project.storyboard.filter((c) => !numbered.some((n) => n.id === c.id)), ...numbered], 'Reorder storyboard');
   }
+}
+
+function ChecklistChip({ scene }: { scene: Scene }): JSX.Element | null {
+  const hasArtwork = scene.layers.some((l) => l.objects.length > 0 || l.rasterAssetId);
+  const hasAnim = scene.animations.length > 0 || scene.drawingFrames.length > 0;
+  const missing: string[] = [];
+  if (!hasArtwork) missing.push('artwork');
+  if (!hasAnim) missing.push('animation');
+  if (scene.audioClips.length === 0) missing.push('audio');
+  if (missing.length === 0) return null;
+  return <div className="chip bad">Missing: {missing.join(', ')}</div>;
 }
 
 function ScenesView(): JSX.Element {
